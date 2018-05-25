@@ -10,6 +10,8 @@
 
 + OpenCV
 
++ pyflann    
+
 ## Structure
 
 ### Database Folder
