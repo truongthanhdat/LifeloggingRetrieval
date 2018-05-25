@@ -1,17 +1,56 @@
 from gensim.models import KeyedVectors
 import config
-from sklearn.neighbors import KDTree
+#from sklearn.neighbors import KDTree
+import pyflann
+import time
+import numpy as np
+import os
 
 def load_model(model_path=config.WORD2VEC_MODEL):
-    print('Load model ...')
+    print('Loading model ...')
+    duration = time.time()
     word_vectors = KeyedVectors.load_word2vec_format(model_path, binary=True).wv
+    duration = time.time() - duration
+    print('Loading model takes %f second' % duration)
     return word_vectors
 
-def build_KDTree(vector):
-    kdt = KDTree(vector, leaf_size=30, metric='euclidean')
-    return kdt
+def build_KDTree(dictionary, model, data_path=config.DATA_KD_TREE_PATH, index_path=config.KD_TREE_INDEX_PATH):
+    print('Building KD Tree...')
+    duration = time.time()
+    new_dictionary = [word for word in dictionary if word in model.vocab]
+    if not os.path.exists(data_path):
+        vectors = np.array([model[word] for word in new_dictionary], dtype=config.DTYPE_FLOAT)
+        np.save(data_path, vectors)
+    else:
+        vectors = np.load(data_path)
+
+    flann = pyflann.FLANN()
+
+    if not os.path.exists(index_path):
+        build_params = flann.build_index(vectors)
+        flann.save_index(index_path)
+    else:
+        flann.load_index('index.flann', vectors)
+    tree = {'kd_tree': flann, 'dictionary': dictionary}
+    duration = time.time() - duration
+    print('Building KD Tree takes %f second' % duration)
+    return tree
+
+def search(word, model, tree, top=config.TOP_WORD_RETRIEVAL, thresh=config.WORD_RETRIEVAL_THRESHOLD):
+    duration = time.time()
+    vector = model[word].reshape(1, -1).astype(config.DTYPE_FLOAT)
+    index, dist = tree['kd_tree'].nn_index(vector, num_neighbors=top)
+    answer = [tree['dictionary'][i] for i in index]
+    duration = time.time() - duration
+    print('Searching takes %f second' % duration)
+    return answer
 
 if __name__ == '__main__':
     model = load_model()
-    tree = build_KDTree(model)
-    print(model.key())
+    dictionary = np.load(config.DICTIONARY_PATH)
+    tree = build_KDTree(dictionary, model)
+    print search('salad', model, tree)
+
+    tree['kd_tree'].delete_index()
+    del tree
+
