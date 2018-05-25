@@ -13,5 +13,5 @@ VOTE_THRESHOLD = 0.5
 
 # PRETRAINED MODEL
 
-WORD2VEC_MODEL = '/Users/truongthanhdat/Dataset/LSC/Database/GoogleNews-vectors-negative300.bin'
+WORD2VEC_MODEL = '../Database/GoogleNews-vectors-negative300.bin'
 

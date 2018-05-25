@@ -3,7 +3,8 @@ import config
 from sklearn.neighbors import KDTree
 
 def load_model(model_path=config.WORD2VEC_MODEL):
-    word_vectors = KeyedVectors.load_word2vec_format(model_path, binary=True)
+    print('Load model ...')
+    word_vectors = KeyedVectors.load_word2vec_format(model_path, binary=True).wv
     return word_vectors
 
 def build_KDTree(vector):
@@ -12,4 +13,5 @@ def build_KDTree(vector):
 
 if __name__ == '__main__':
     model = load_model()
-    print model.keys()
+    tree = build_KDTree(model)
+    print(model.key())
