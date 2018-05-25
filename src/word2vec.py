@@ -1,6 +1,5 @@
 from gensim.models import KeyedVectors
 import config
-#from sklearn.neighbors import KDTree
 import pyflann
 import time
 import numpy as np
@@ -17,16 +16,16 @@ def load_model(model_path=config.WORD2VEC_MODEL):
 def build_KDTree(dictionary, model, data_path=config.DATA_KD_TREE_PATH):
     print('Building KD Tree...')
     duration = time.time()
-    new_dictionary = [word for word in dictionary if word in model.vocab]
+    dictionary = [word for word in dictionary if word in model.vocab]
     if not os.path.exists(data_path):
-        vectors = np.array([model[word] for word in new_dictionary], dtype=config.DTYPE_FLOAT)
+        vectors = np.array([model[word] for word in dictionary], dtype=config.DTYPE_FLOAT)
         np.save(data_path, vectors)
     else:
         vectors = np.load(data_path)
 
     flann = pyflann.FLANN()
     flann.build_index(vectors)
-    tree = {'kd_tree': flann, 'dictionary': new_dictionary}
+    tree = {'kd_tree': flann, 'dictionary': dictionary}
     duration = time.time() - duration
     print('Building KD Tree takes %f second' % duration)
     return tree
@@ -41,9 +40,10 @@ def search(word, model, tree, top=config.TOP_WORD_RETRIEVAL, thresh=config.WORD_
     return answer
 
 if __name__ == '__main__':
-    dictionary = list(set(np.load(config.DICTIONARY_PATH).tolist()))
+    dictionary = np.load(config.DICTIONARY_PATH).tolist()
     model = load_model()
     tree = build_KDTree(dictionary, model)
+
     print search('salad', model, tree)
 
     tree['kd_tree'].delete_index()
