@@ -1,6 +1,5 @@
 from gensim.models import KeyedVectors
 import config
-import pyflann
 import time
 import numpy as np
 import os
@@ -24,10 +23,6 @@ def build_KDTree(dictionary, model, data_path=config.DATA_KD_TREE_PATH):
     else:
         vectors = np.load(data_path)
 
-    #flann = pyflann.FLANN()
-    #flann.build_index(vectors)
-    #tree = {'kd_tree': flann, 'dictionary': dictionary}
-
     kdtree = KDTree(vectors)
     tree = {'kd_tree': kdtree, 'dictionary': dictionary}
     duration = time.time() - duration
@@ -37,10 +32,8 @@ def build_KDTree(dictionary, model, data_path=config.DATA_KD_TREE_PATH):
 def search(word, model, tree, top=config.TOP_WORD_RETRIEVAL, thresh=config.WORD_RETRIEVAL_THRESHOLD):
     duration = time.time()
     vector = model[word].reshape(1, -1).astype(config.DTYPE_FLOAT)
-    #index, dist = tree['kd_tree'].nn_index(vector, num_neighbors=top)
 
-    dist, index = tree['kd_tree'].query(vector, k=10)
-    print(index)
+    dist, index = tree['kd_tree'].query(vector, k=top, n_jobs=-1)
     answer = [tree['dictionary'][i] for i in index[0]]
     duration = time.time() - duration
     print('Searching takes %f second' % duration)
@@ -53,6 +46,5 @@ if __name__ == '__main__':
 
     print search('salad', model, tree)
 
-    #tree['kd_tree'].delete_index()
     del tree
 
