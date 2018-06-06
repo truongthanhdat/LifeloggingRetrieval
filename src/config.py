@@ -34,3 +34,8 @@ DATA_KD_TREE_PATH = '../Database/kd_tree_data.npy'
 # CAPTIONS
 CAPTIONS_DIR = '../Database/Captions'
 MERGE_CAPTION_PATH = '../Database/merge_caption.pickle'
+
+# DICTIONARY
+CAPTION_DICT_PATH = '../Database/caption_dict.npy'
+ENTITY_DICT_PATH = '../Database/entity_dict.npy'
+PLACE_DICT_PATH = '../Database/place_dict.npy'
